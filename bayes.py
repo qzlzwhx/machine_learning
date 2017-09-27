@@ -57,13 +57,30 @@ def trainNB0(trainMatrix, labels_list):
 
 
 def classifyNB(test_doc_vector, p_0_vector, p_1_vector, p_1_class):
-	p0 = test_doc_vector * p_0_vector + log(p_1_class)
-	p1 = test_doc_vector * p_1_vector + log(1.0-p_1_class)	
+	p0 = sum(test_doc_vector * p_0_vector) + log(p_1_class)
+	p1 = sum(test_doc_vector * p_1_vector) + log(1.0-p_1_class)	
 	if p1 > p0:
 		return 1
 	else:
 		return 0
 
 
+def testingNB():
+	# 数据集合
+	dataSet, labels = loadDataSet()
+	# 单词向量
+	vocabList = createVocabList(dataSet)	
+	# 矩阵
+	train_matrix = []
+	for data in dataSet:
+		train_matrix.append(setOfWords2Vec(vocabList, data))
+	p_0_vector, p_1_vector, p_1_class = trainNB0(train_matrix, labels)
+	testEntry = ['love', 'my', 'dalmation']
+	test_vector = array(setOfWords2Vec(vocabList, testEntry))
+	print 'testEntry is :%s' % classifyNB(test_vector, p_0_vector, p_1_vector, p_1_class)
+	test_entry = ['stupid', 'garbage']
+	test_vector = array(setOfWords2Vec(vocabList, test_entry))
+	print 'test_entry is %s' % classifyNB(test_vector, p_0_vector, p_1_vector, p_1_class)
 
+	
 
