@@ -1,4 +1,12 @@
 # coding:utf8
+'''
+思路就是从所有特征中找到最优的分类特征，进行递归创造树
+如果特征A的某个值分类之后所有的分类都是一样的，那么这个特征A的该值的分类应该就是这个分类。
+如果该值分类之后已经没有其余特征可以使用了，那么选取出现此处最多的分类作为该值的分类。
+如果某个值分类之后还有分类，那么表示还需要进行递归处理上述逻辑
+
+'''
+import pickle
 from math import log
 
 
@@ -13,7 +21,7 @@ def calcShannonEat(dataSet):
 	shannonEnt = 0.0
 	for key in labelCounts:
 		prob = labelCounts.get(key) / float(numEntries)
-		print prob * log(prob, 2), log(prob, 2)
+		#print prob * log(prob, 2), log(prob, 2)
 		shannonEnt -= prob * log(prob,2)
 	return shannonEnt
 
@@ -22,7 +30,7 @@ def createDataSet():
 	dataSet = [
 		[1,1,'yes'],[1,1,'yes'],[1,0,'no'],[0,1,'no'],[0,1,'no']
 	]
-	labels = ['no sufacing', 'flippers']
+	labels = ['no surfacing', 'flippers']
 	return dataSet, labels
 
 
@@ -58,7 +66,7 @@ def chooseBestFeatureToSplit(dataSet):
 		if sub_shannon < best_shannon_ent:
 			index = i
 			best_shannon_ent = sub_shannon
-	return best_shannon_ent, index
+	return index
 
 
 def majorityCnt(class_list):
@@ -76,13 +84,13 @@ def create_tree(dataSet, labels):
 	class_list = [data[-1] for data in dataSet]
 	if class_list.count(class_list[0]) == len(class_list):
 		return class_list[0]
-	# 如果数据集合只有一列了，那么表示就只剩下最后一列分类列了，所以就再迭代了，返回class_list里边出现次数最多的分类
+	# 如果数据集合只有一列了，那么表示就只剩下最后一列分类列了，所以就不再迭代了，返回class_list里边出现次数最多的分类
 	if len(dataSet[0]) == 1:
 		return majorityCnt(class_list)
 
 	# 获取数据集合中的最优的特征
 	bestFeatIndex = chooseBestFeatureToSplit(dataSet)
-	feature_name = labels.pop(bestFeatIndex)
+	feature_name = labels.pop(int(bestFeatIndex))
 	# 获取特征都有那些值，以继续分割
 	feat_values = set([ex[bestFeatIndex] for ex in dataSet])
 	# 构建一个树，树的第一个根元素也就是第一个分割数据集合的特征名字feature_name，他也是一个字典，
@@ -96,5 +104,29 @@ def create_tree(dataSet, labels):
 	return my_tree
 
 	
+def classify(inputTree, featLabels, testVec):
+	firstStr = inputTree.keys()[0]
+	secondDict = inputTree[firstStr]
+	feature_index = featLabels.index(firstStr)
+	test_feature_value = testVec[feature_index]
+	for feature_value in secondDict:
+		if feature_value == test_feature_value:
+			if isinstance(secondDict[feature_value], dict):
+				classLabel = classify(secondDict[feature_value], featLabels, testVec)
+			else:
+				classLabel = secondDict[feature_value]
+	return classLabel
 
-	
+
+def storeTree(input_tree, filename):
+	fw = open(filename, 'w')
+	pickle.dump(input_tree, fw)
+	fw.close()
+
+
+def grab_tree(filename):
+	fr = open(filename)
+	data = pickle.load(fr)	
+	fr.close()
+	return data
+
