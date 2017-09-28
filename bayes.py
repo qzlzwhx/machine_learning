@@ -33,6 +33,16 @@ def setOfWords2Vec(vocabList, inputSet):
 	return returnVec
 	
 
+def bagOfWords2Vec(vocabList, inputSet):
+	# 将输入的文档的单词集合(set)，拼装称一个0,1组合的向量
+	returnVec = [0] * len(vocabList)
+	for word in inputSet:
+		if word in vocabList:
+			returnVec[vocabList.index(word)] += 1
+		else:
+			print 'word {} not in vocabList'.format(word)
+	return returnVec
+
 
 def trainNB0(trainMatrix, labels_list):
 	
@@ -58,7 +68,7 @@ def trainNB0(trainMatrix, labels_list):
 
 def classifyNB(test_doc_vector, p_0_vector, p_1_vector, p_1_class):
 	p0 = sum(test_doc_vector * p_0_vector) + log(p_1_class)
-	p1 = sum(test_doc_vector * p_1_vector) + log(1.0-p_1_class)	
+	p1 = sum(test_doc_vector * p_1_vector) + log(1.0-p_1_class)
 	if p1 > p0:
 		return 1
 	else:
@@ -69,7 +79,7 @@ def testingNB():
 	# 数据集合
 	dataSet, labels = loadDataSet()
 	# 单词向量
-	vocabList = createVocabList(dataSet)	
+	vocabList = createVocabList(dataSet)
 	# 矩阵
 	train_matrix = []
 	for data in dataSet:
@@ -82,5 +92,10 @@ def testingNB():
 	test_vector = array(setOfWords2Vec(vocabList, test_entry))
 	print 'test_entry is %s' % classifyNB(test_vector, p_0_vector, p_1_vector, p_1_class)
 
-	
+
+def textParse(bigString):
+	import re
+	listOfTokens = re.split(r'\W*', baseString)
+	return [token.lower() for token in listOfTokens if len(token) > 2]
+
 
